@@ -1,18 +1,13 @@
 package org.firstinspires.ftc.teamcode.essentials;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.SampleRevBlinkinLedDriver;
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorColor;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 /*
@@ -24,14 +19,18 @@ import org.openftc.easyopencv.OpenCvWebcam;
  */
 
 public class ITDR1EssentialsAuto extends LinearOpMode {
-    public DcMotor LF; // LeftFront Motor
-    public DcMotor LB; // LeftBack Motor
-    public DcMotor RF; // RightFront Motor
-    public DcMotor RB; // RightBack Motor
+    public DcMotorEx LF; // LeftFront Motor
+    public DcMotorEx LB; // LeftBack Motor
+    public DcMotorEx RF; // RightFront Motor
+    public DcMotorEx RB; // RightBack Motor
 
     public SensorColor color;
-
-    public BNO055IMU imu;
+    public DcMotorEx slides;
+    public Servo clawGrab;
+    public Servo clawTilt;
+    public Servo leftTilt;
+    public Servo rightTilt;
+    public Servo twoBar;
 
     public int tickRotation;
     public int tickAcceptance;
@@ -41,35 +40,87 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
 
 
 
-    public void initializeMotors(){
-        LF = hardwareMap.get(DcMotor.class, "leftFront");
+    public void initDrive(){
+        LF = hardwareMap.get(DcMotorEx.class, "leftFront");
         LF.setDirection(DcMotorSimple.Direction.REVERSE);
-        LF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LF.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         ((DcMotorEx) LF).setTargetPositionTolerance(tickAcceptance);
 
-        LB = hardwareMap.get(DcMotor.class, "leftBack");
+        LB = hardwareMap.get(DcMotorEx.class, "leftBack");
         LB.setDirection(DcMotorSimple.Direction.REVERSE);
-        LB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LB.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         ((DcMotorEx) LB).setTargetPositionTolerance(tickAcceptance);
 
-        RF = hardwareMap.get(DcMotor.class, "rightFront");
+        RF = hardwareMap.get(DcMotorEx.class, "rightFront");
         RF.setDirection(DcMotorSimple.Direction.FORWARD);
-        RF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RF.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         ((DcMotorEx) RF).setTargetPositionTolerance(tickAcceptance);
 
-        RB = hardwareMap.get(DcMotor.class, "rightBack");
+        RB = hardwareMap.get(DcMotorEx.class, "rightBack");
         RB.setDirection(DcMotorSimple.Direction.FORWARD);
-        RB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RB.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         ((DcMotorEx) RB).setTargetPositionTolerance(tickAcceptance);
-
-
-
 
     }
 
     public void initSensors(){
         color = hardwareMap.get(SensorColor.class, "color");
     }
+
+    public void initSlides(){
+        slides = hardwareMap.get(DcMotorEx.class, "slideMotor");
+        slides.setDirection(DcMotorSimple.Direction.REVERSE);
+        slides.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        slides.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        
+        clawGrab = hardwareMap.get(Servo.class, "clawGrab");
+        clawTilt = hardwareMap.get(Servo.class, "clawTilt");
+        leftTilt = hardwareMap.get(Servo.class,"leftTilt");
+        rightTilt = hardwareMap.get(Servo.class,"rightTilt");
+        rightTilt.setDirection(Servo.Direction.REVERSE);
+
+    }
+
+    
+    public Action closeClaw(){
+
+        return new InstantAction(() -> { clawGrab.setPosition(0.5); } );
+    }
+
+    public Action openClaw(){
+        return new InstantAction(() -> { clawGrab.setPosition(0); } );
+    }
+
+    public Action tiltClawMid(){
+        return new InstantAction(() -> { clawTilt.setPosition(0.8); } );
+    }
+
+
+    public void conciseTwoBar(double pos){
+        leftTilt.setPosition(pos);
+        rightTilt.setPosition(pos);
+    }
+
+    public Action tiltSlide(double pos){
+        // Down back: 0
+        // Straight up: 0.66
+
+        return new InstantAction(() -> {conciseTwoBar(pos);});
+    }
+
+
+    public Action moveSlideMid(){
+        return new InstantAction(() -> {slides.setTargetPosition(250);
+        slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        slides.setPower(1); closeClaw(); });
+    }
+
+    public Action moveSlideBottom(){
+        return new InstantAction(() -> {slides.setTargetPosition(10);
+            slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            slides.setPower(1); closeClaw(); });
+    }
+
 
 /*
     public void runCamera(){
