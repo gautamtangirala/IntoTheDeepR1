@@ -78,17 +78,26 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
         leftTilt = hardwareMap.get(Servo.class,"leftTilt");
         rightTilt = hardwareMap.get(Servo.class,"rightTilt");
         rightTilt.setDirection(Servo.Direction.REVERSE);
+        twoBar = hardwareMap.get(Servo.class, "twoBar");
 
     }
 
     
-    public Action closeClaw(){
+    public Action closeClawAction(){
 
         return new InstantAction(() -> { clawGrab.setPosition(0.5); } );
     }
 
-    public Action openClaw(){
+    public Action openClawAction(){
         return new InstantAction(() -> { clawGrab.setPosition(0); } );
+    }
+
+    public void openClaw(){
+        clawGrab.setPosition(0);
+    }
+
+    public void closeClaw(){
+        clawGrab.setPosition(0.5);
     }
 
     public Action tiltClawMid(){
@@ -96,29 +105,45 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
     }
 
 
-    public void conciseTwoBar(double pos){
+    public void conciseSlideTilt(double pos){
         leftTilt.setPosition(pos);
         rightTilt.setPosition(pos);
     }
 
     public Action tiltSlide(double pos){
-        // Down back: 0
-        // Straight up: 0.66
 
-        return new InstantAction(() -> {conciseTwoBar(pos);});
+        //Down 0
+        //Up 1
+
+        return new InstantAction(() -> {conciseSlideTilt(pos);});
+    }
+
+    public Action twoBarIn(){
+        return new InstantAction(() -> {twoBar.setPosition(0);});
+    }
+
+    public Action twoBarOut(){
+        return new InstantAction(() -> {twoBar.setPosition(1);});
     }
 
 
+
+    public Action moveSlideTop(){
+        return new InstantAction(() -> {slides.setTargetPosition(800);
+        slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        slides.setPower(1);  });
+    }
+
     public Action moveSlideMid(){
         return new InstantAction(() -> {slides.setTargetPosition(250);
-        slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-        slides.setPower(1); closeClaw(); });
+            slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            slides.setPower(1); });
     }
 
     public Action moveSlideBottom(){
         return new InstantAction(() -> {slides.setTargetPosition(10);
             slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            slides.setPower(1); closeClaw(); });
+            slides.setPower(1); });
     }
 
 

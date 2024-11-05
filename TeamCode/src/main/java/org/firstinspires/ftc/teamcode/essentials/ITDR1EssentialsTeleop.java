@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 
 
@@ -26,7 +27,13 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
 
     public RevBlinkinLedDriver led;
     public ColorSensor color;
-
+    
+    public DcMotorEx slides;
+    public Servo clawGrab;
+    public Servo clawTilt;
+    public Servo leftTilt;
+    public Servo rightTilt;
+    public Servo twoBar;
     double vertical;
     double horizontal;
     double pivot;
@@ -34,7 +41,7 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
     int drivetrainVelocityRate; // Converts power to ticks
     double drivetrainVelocityMulti = 1; //for slowing down robot
     public DcMotorEx leftEncoder, rightEncoder, frontEncoder;
-
+    
     public ITDR1EssentialsTeleop(int drivetrainVelocityRate) {
         this.drivetrainVelocityRate = drivetrainVelocityRate;
     }
@@ -56,10 +63,21 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
         RB.setDirection(DcMotorSimple.Direction.REVERSE);
         RB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        slides = hardwareMap.get(DcMotorEx.class, "slideMotor");
+        slides.setDirection(DcMotorSimple.Direction.REVERSE);
+        slides.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        slides.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
+        clawGrab = hardwareMap.get(Servo.class, "clawGrab");
+        clawTilt = hardwareMap.get(Servo.class, "clawTilt");
+        leftTilt = hardwareMap.get(Servo.class,"leftTilt");
+        rightTilt = hardwareMap.get(Servo.class,"rightTilt");
+        rightTilt.setDirection(Servo.Direction.REVERSE);
 
     }
 
+    
+    
     public void initLed(){
         color = hardwareMap.get(ColorSensor.class, "color");
 
@@ -106,71 +124,101 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
 
     }
 
-    public void gamepad2Controls() {
+    public void clawControls(){
+        if(gamepad2.a){
+            closeClaw();
+        }
+        else if(gamepad2.b){
+            openClaw();
+        }
+        else if(gamepad2.x){
 
-     /*
+        }
+        else if(gamepad2.y){
+
+        }
+    }
+
+    public void slideControls() {
+
+     
         if (gamepad2.dpad_left){
-            CS.setPosition(clawGrab);
-            FBS.setPosition(FBSback);
-            RS.setTargetPosition(1300);
-            RS.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RS.setPower(1);
-            while (RS.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",RS.getCurrentPosition()); telemetry.update(); clawFBScontrol();}
+            closeClaw();
+            slides.setTargetPosition(1300);
+            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slides.setPower(1);
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls();}
         }
         else if (gamepad2.dpad_up){
-            CS.setPosition(clawGrab);
-            FBS.setPosition(0.15);
-            RS.setTargetPosition(3250);
-            RS.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RS.setPower(1);
+            closeClaw();
+            slides.setTargetPosition(3250);
+            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slides.setPower(1);
 
-            while (RS.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",RS.getCurrentPosition()); telemetry.update(); clawFBScontrol();}
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls();}
         }
         else if(gamepad2.dpad_right){
-            CS.setPosition(clawGrab);
-            FBS.setPosition(FBSback);
-            RS.setTargetPosition(2530);
-            RS.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RS.setPower(1);
+            closeClaw();
+            slides.setTargetPosition(2530);
+            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slides.setPower(1);
 
-            while (RS.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",RS.getCurrentPosition()); telemetry.update(); clawFBScontrol();}
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls(); }
         }
         else if(gamepad2.dpad_down){
-            CS.setPosition(clawGrab);
-            FBS.setPosition(FBSfront);
-            RS.setTargetPosition(0);
-            RS.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RS.setPower(1);
+            closeClaw();
+            slides.setTargetPosition(0);
+            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slides.setPower(1);
 
-            while (RS.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",RS.getCurrentPosition()); telemetry.update(); clawFBScontrol();}
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls(); }
         }
         else{
-            RS.setPower(0.05);
+            slides.setPower(0.05);
         }
 
 
-        if (gamepad2.left_bumper && RS.getCurrentPosition() > 118){
+        if (gamepad2.left_bumper && slides.getCurrentPosition() > 118){
 
-            RS.setTargetPosition(RS.getCurrentPosition()-120);
-            RS.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RS.setPower(1);
+            slides.setTargetPosition(slides.getCurrentPosition()-120);
+            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slides.setPower(1);
 
 
-            while (RS.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",RS.getCurrentPosition()); telemetry.update(); clawFBScontrol();}
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); }
 
         }
-        if (gamepad2.right_bumper && RS.getCurrentPosition() < 3100){
-            RS.setTargetPosition(RS.getCurrentPosition()+118);
-            RS.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RS.setPower(1);
+        if (gamepad2.right_bumper && slides.getCurrentPosition() < 3100){
+            slides.setTargetPosition(slides.getCurrentPosition()+118);
+            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slides.setPower(1);
 
-            while (RS.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",RS.getCurrentPosition()); telemetry.update(); clawFBScontrol();}
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); }
         }
-   */
+   
 
     }
 
 
+
+    // smaller functions
+
+    public void closeClaw(){
+
+        clawGrab.setPosition(0.5);
+    }
+
+    public void openClaw(){
+         clawGrab.setPosition(0);
+    }
+
+    public void twoBarOut(){
+        //twoBar.setPosition();
+    }
+
+    public void twoBarIn(){
+        //twoBar.setPosition();
+    }
     @Override
     public void runOpMode(){}
     }

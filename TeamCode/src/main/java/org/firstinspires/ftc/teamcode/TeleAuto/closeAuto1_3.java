@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.RRFiles.MecanumDrive;
 import org.firstinspires.ftc.teamcode.essentials.ITDR1EssentialsAuto;
 
 @Autonomous
-public class redAutoClose extends ITDR1EssentialsAuto {
+public class closeAuto1_3 extends ITDR1EssentialsAuto {
 
 
     @Override
@@ -20,7 +20,7 @@ public class redAutoClose extends ITDR1EssentialsAuto {
     public void runOpMode(){
         Pose2d startPose = new Pose2d(-35,-60,Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, startPose);
-        Pose2d currPose = drive.pose;
+
 
         //Basket Position XY
         double DropX = -51, DropY = -51, DropAngle = Math.toRadians(45);
@@ -31,13 +31,12 @@ public class redAutoClose extends ITDR1EssentialsAuto {
         Action dropPreload = drive.actionBuilder(startPose)
                 .strafeToLinearHeading(dropVector, DropAngle)
                 .build();
-        Action bucketDropOff = drive.actionBuilder(currPose)
-                .strafeToLinearHeading(dropVector, DropAngle)
-                .build();
+
         Action pickRightBlock = drive.actionBuilder(dropPose)
                 .strafeToLinearHeading(new Vector2d(-44,-35),Math.toRadians(90))
-                
                 .build();
+
+
         Action pickMidBlock = drive.actionBuilder(dropPose)
                 .strafeToLinearHeading(new Vector2d(-53,-35), Math.toRadians(90))
                 
@@ -48,59 +47,95 @@ public class redAutoClose extends ITDR1EssentialsAuto {
                 .build();
         initDrive();
         initSlides();
+        closeClaw();
 
         waitForStart();
 
         Actions.runBlocking(new ParallelAction(
                 dropPreload,
-                moveSlideMid(),
-                closeClaw()
+                moveSlideTop(),
+                tiltSlide(1),
+                twoBarIn()
         ));
-        currPose = drive.pose;
-        openClaw();
+
+       sleep(1000);
+       openClaw();
+       sleep(1000);
 
         Actions.runBlocking(new ParallelAction(
                 pickRightBlock,
-                moveSlideBottom()
+                moveSlideBottom(),
+                tiltSlide(0)
         ));
-        currPose = drive.pose;
-        openClaw();
 
+        sleep(1000);
+        closeClaw();
+        sleep(1000);
+
+        Action bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(dropVector, DropAngle).build();
         Actions.runBlocking(new ParallelAction(
                 bucketDropOff,
-                moveSlideMid()
+                moveSlideTop(),
+                tiltSlide(1)
         ));
-        currPose = drive.pose;
+
+        sleep(1000);
         openClaw();
+        sleep(1000);
 
         Actions.runBlocking(new ParallelAction(
                 pickMidBlock,
-                moveSlideBottom()
+                moveSlideBottom(),
+                tiltSlide(0)
         ));
 
-        currPose = drive.pose;
-        openClaw();
 
+        sleep(1000);
+        closeClaw();
+        sleep(1000);
+
+
+        bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(dropVector, DropAngle).build();
         Actions.runBlocking(new ParallelAction(
                 bucketDropOff,
-                moveSlideMid()
+                moveSlideTop(),
+                tiltSlide(1)
         ));
-        currPose = drive.pose;
+
+        sleep(1000);
         openClaw();
+        sleep(1000);
         Actions.runBlocking(new ParallelAction(
                 pickLeftBlock,
-                moveSlideBottom()
+                moveSlideBottom(),
+                tiltSlide(0)
         ));
-        currPose = drive.pose;
-        openClaw();
+
+        sleep(1000);
+        closeClaw();
+        sleep(1000);
+
+
+        bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(dropVector, DropAngle).build();
         Actions.runBlocking(new ParallelAction(
                 bucketDropOff,
-                moveSlideBottom()
+                moveSlideTop(),
+                tiltSlide(1)
         ));
 
-        currPose = drive.pose;
-        openClaw();
 
+
+        sleep(1000);
+        openClaw();
+        sleep(1000);
+
+
+        Actions.runBlocking(new ParallelAction(
+                moveSlideBottom(),
+                tiltSlide(0)
+        ));
+
+        sleep(1000);
     }
 
 }
