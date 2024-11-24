@@ -23,7 +23,7 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
 
 
         //Basket Position XY
-        double DropX = -51, DropY = -51, DropAngle = Math.toRadians(45);
+        double DropX = -55.5, DropY = -55.5, DropAngle = Math.toRadians(45);
 
         Vector2d dropVector = new Vector2d(DropX, DropY);
         Pose2d dropPose = new Pose2d(DropX, DropY, DropAngle);
@@ -33,34 +33,39 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
                 .build();
 
         Action pickRightBlock = drive.actionBuilder(dropPose)
-                .strafeToLinearHeading(new Vector2d(-44,-35),Math.toRadians(90))
+                .strafeToLinearHeading(new Vector2d(-43.5,-32),Math.toRadians(90))
                 .build();
 
 
         Action pickMidBlock = drive.actionBuilder(dropPose)
-                .strafeToLinearHeading(new Vector2d(-53,-35), Math.toRadians(90))
+                .strafeToLinearHeading(new Vector2d(-55,-32), Math.toRadians(90))
                 
                 .build();
         Action pickLeftBlock = drive.actionBuilder(dropPose)
-                .strafeToLinearHeading(new Vector2d(-50,-35), Math.toRadians(135))
-                
+                .strafeToLinearHeading(new Vector2d(-40,-21), Math.toRadians(180))
+                .strafeToConstantHeading(new Vector2d(-57.5,-20))
                 .build();
         initDrive();
         initSlides();
         closeClaw();
+        clawTilt.setPosition(0);
 
         waitForStart();
 
         Actions.runBlocking(new ParallelAction(
                 dropPreload,
                 moveSlideTop(),
-                tiltSlide(1),
-                twoBarIn()
+                tiltSlide(0.8)
         ));
 
-       sleep(1000);
-       openClaw();
-       sleep(1000);
+        sleep(200);
+        tiltClawMid();
+        conciseSlideTilt(1);
+        sleep(200);
+        openClaw();
+        sleep(200);
+        conciseSlideTilt(0.8);
+        clawTilt.setPosition(0.1);
 
         Actions.runBlocking(new ParallelAction(
                 pickRightBlock,
@@ -68,20 +73,28 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
                 tiltSlide(0)
         ));
 
-        sleep(1000);
+
+        sleep(200);
         closeClaw();
-        sleep(1000);
+        sleep(200);
 
         Action bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(dropVector, DropAngle).build();
         Actions.runBlocking(new ParallelAction(
                 bucketDropOff,
                 moveSlideTop(),
-                tiltSlide(1)
+                tiltSlide(0.8)
         ));
 
-        sleep(1000);
+
+        sleep(200);
+        tiltClawMid();
+        conciseSlideTilt(1);
+        sleep(200);
         openClaw();
-        sleep(1000);
+        sleep(200);
+        conciseSlideTilt(0.8);
+        clawTilt.setPosition(0.1);
+
 
         Actions.runBlocking(new ParallelAction(
                 pickMidBlock,
@@ -90,52 +103,62 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
         ));
 
 
-        sleep(1000);
+
+        sleep(200);
         closeClaw();
-        sleep(1000);
+        sleep(200);
 
 
         bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(dropVector, DropAngle).build();
         Actions.runBlocking(new ParallelAction(
                 bucketDropOff,
                 moveSlideTop(),
-                tiltSlide(1)
+                tiltSlide(0.8)
         ));
 
-        sleep(1000);
+        sleep(200);
+        tiltClawMid();
+        conciseSlideTilt(1);
+        sleep(200);
         openClaw();
-        sleep(1000);
+        sleep(200);
+        conciseSlideTilt(0.8);
+        clawTilt.setPosition(0.1);
+
         Actions.runBlocking(new ParallelAction(
                 pickLeftBlock,
                 moveSlideBottom(),
                 tiltSlide(0)
         ));
 
-        sleep(1000);
+        sleep(200);
         closeClaw();
-        sleep(1000);
+        sleep(200);
 
 
         bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(dropVector, DropAngle).build();
         Actions.runBlocking(new ParallelAction(
                 bucketDropOff,
-                moveSlideTop(),
-                tiltSlide(1)
+                moveSlideTop()
         ));
 
 
 
+        conciseSlideTilt(1);
         sleep(1000);
         openClaw();
-        sleep(1000);
+        sleep(200);
 
-
+        bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(new Vector2d(DropX + 4, DropY +  4), DropAngle).build();
         Actions.runBlocking(new ParallelAction(
+                bucketDropOff,
                 moveSlideBottom(),
                 tiltSlide(0)
         ));
 
+
         sleep(1000);
+
     }
 
 }

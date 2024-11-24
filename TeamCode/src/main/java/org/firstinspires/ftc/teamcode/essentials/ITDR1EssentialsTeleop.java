@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.essentials;
 
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -7,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.RRFiles.MecanumDrive;
 
 
 
@@ -41,25 +46,25 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
     int drivetrainVelocityRate; // Converts power to ticks
     double drivetrainVelocityMulti = 1; //for slowing down robot
     public DcMotorEx leftEncoder, rightEncoder, frontEncoder;
-    
+    //
     public ITDR1EssentialsTeleop(int drivetrainVelocityRate) {
         this.drivetrainVelocityRate = drivetrainVelocityRate;
     }
 
     public void initialize() {
-        LF = hardwareMap.get(DcMotor.class, "LeftFront");
+        LF = hardwareMap.get(DcMotor.class, "leftFront");
         LF.setDirection(DcMotorSimple.Direction.FORWARD);
         LF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        LB = hardwareMap.get(DcMotor.class, "LeftBack");
+        LB = hardwareMap.get(DcMotor.class, "leftBack");
         LB.setDirection(DcMotorSimple.Direction.FORWARD);
         LB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        RF = hardwareMap.get(DcMotor.class, "RightFront");
+        RF = hardwareMap.get(DcMotor.class, "rightFront");
         RF.setDirection(DcMotorSimple.Direction.REVERSE);
         RF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        RB = hardwareMap.get(DcMotor.class, "RightBack");
+        RB = hardwareMap.get(DcMotor.class, "rightBack");
         RB.setDirection(DcMotorSimple.Direction.REVERSE);
         RB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -69,12 +74,14 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
         slides.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
         clawGrab = hardwareMap.get(Servo.class, "clawGrab");
+        twoBar = hardwareMap.get(Servo.class, "twoBar");
         clawTilt = hardwareMap.get(Servo.class, "clawTilt");
         leftTilt = hardwareMap.get(Servo.class,"leftTilt");
         rightTilt = hardwareMap.get(Servo.class,"rightTilt");
         rightTilt.setDirection(Servo.Direction.REVERSE);
 
     }
+
 
     
     
@@ -104,8 +111,10 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
 
     }
 
+
     public void gamepad1Controls() {
         // Initiating Holonomic Drive
+
         double SlowedDownMulti = 0.6;
         if (gamepad1.left_bumper){
             drivetrainVelocityMulti = SlowedDownMulti;
@@ -117,70 +126,80 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
         horizontal = -gamepad1.right_stick_x * drivetrainVelocityRate * drivetrainVelocityMulti;
         pivot = -gamepad1.left_stick_x * drivetrainVelocityRate * drivetrainVelocityMulti;
 
-        ((DcMotorEx) LF).setVelocity(pivot + vertical + horizontal);
-        ((DcMotorEx) LB).setVelocity(vertical - horizontal + pivot);
-        ((DcMotorEx) RF).setVelocity(vertical - horizontal - pivot);
-        ((DcMotorEx) RB).setVelocity(vertical + horizontal - pivot);
+        LF.setPower(pivot + vertical + horizontal);
+        LB.setPower(pivot + vertical - horizontal );
+        RF.setPower(0 - pivot + vertical - horizontal);
+        RB.setPower(0 - pivot + vertical + horizontal);
+/*
+        drive.setDrivePowers(new PoseVelocity2d(
+                new Vector2d(
+                        -gamepad1.left_stick_y,
+                        -gamepad1.left_stick_x
+                ),
+                -gamepad1.right_stick_x
+        ));
+*/
 
     }
 
     public void clawControls(){
-        if(gamepad2.a){
+        if(gamepad2.x){
             closeClaw();
         }
         else if(gamepad2.b){
             openClaw();
         }
-        else if(gamepad2.x){
+        else if(gamepad2.a){
+            twoBarIn();
 
         }
         else if(gamepad2.y){
-
+            twoBarOut();
         }
     }
 
     public void slideControls() {
 
-     
+
         if (gamepad2.dpad_left){
-            closeClaw();
-            slides.setTargetPosition(1300);
-            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            slides.setPower(1);
-            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls();}
+            conciseSlideTilt(0);
+            twoBarIn();
         }
         else if (gamepad2.dpad_up){
             closeClaw();
-            slides.setTargetPosition(3250);
+            twoBarIn();
+            conciseSlideTilt(1);
+            tiltClawMid();
+            slides.setTargetPosition(680);
             slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             slides.setPower(1);
 
-            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls();}
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("Slide Height",slides.getCurrentPosition()); telemetry.update(); clawControls(); }
         }
         else if(gamepad2.dpad_right){
-            closeClaw();
-            slides.setTargetPosition(2530);
-            slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            slides.setPower(1);
-
-            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls(); }
+           conciseSlideTilt(1);
+           twoBarIn();
         }
         else if(gamepad2.dpad_down){
             closeClaw();
+            twoBarIn();
+            conciseSlideTilt(0.25);
+            tiltClawDown();
+
             slides.setTargetPosition(0);
             slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             slides.setPower(1);
 
-            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); clawControls(); }
+            while (slides.isBusy()){gamepad1Controls(); telemetry.addData("Slide Height",slides.getCurrentPosition()); telemetry.update(); clawControls(); }
         }
         else{
-            slides.setPower(0.05);
+            slides.setPower(0.01);
         }
 
 
-        if (gamepad2.left_bumper && slides.getCurrentPosition() > 118){
+        if (gamepad2.left_bumper && slides.getCurrentPosition() > 105){
 
-            slides.setTargetPosition(slides.getCurrentPosition()-120);
+            slides.setTargetPosition(slides.getCurrentPosition()-100);
             slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             slides.setPower(1);
 
@@ -188,8 +207,8 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
             while (slides.isBusy()){gamepad1Controls(); telemetry.addData("RS Height",slides.getCurrentPosition()); telemetry.update(); }
 
         }
-        if (gamepad2.right_bumper && slides.getCurrentPosition() < 3100){
-            slides.setTargetPosition(slides.getCurrentPosition()+118);
+        if (gamepad2.right_bumper && slides.getCurrentPosition() < 700){
+            slides.setTargetPosition(slides.getCurrentPosition()+100);
             slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             slides.setPower(1);
 
@@ -200,12 +219,11 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
     }
 
 
-
     // smaller functions
 
     public void closeClaw(){
 
-        clawGrab.setPosition(0.5);
+        clawGrab.setPosition(0.75);
     }
 
     public void openClaw(){
@@ -213,11 +231,26 @@ public class ITDR1EssentialsTeleop extends LinearOpMode {
     }
 
     public void twoBarOut(){
-        //twoBar.setPosition();
+        twoBar.setPosition(1);
     }
 
     public void twoBarIn(){
-        //twoBar.setPosition();
+        twoBar.setPosition(0);
+    }
+
+    public void tiltClawDown(){
+        clawTilt.setPosition(0);
+    }
+    public void tiltClawMid(){
+        clawTilt.setPosition(0.5);
+    }
+    public void tiltClawUp(){
+        clawTilt.setPosition(0);
+    }
+
+    public void conciseSlideTilt(double pos){
+        leftTilt.setPosition(pos);
+        rightTilt.setPosition(pos);
     }
     @Override
     public void runOpMode(){}

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.essentials;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -71,7 +72,7 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
         slides = hardwareMap.get(DcMotorEx.class, "slideMotor");
         slides.setDirection(DcMotorSimple.Direction.REVERSE);
         slides.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        slides.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slides.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         
         clawGrab = hardwareMap.get(Servo.class, "clawGrab");
         clawTilt = hardwareMap.get(Servo.class, "clawTilt");
@@ -100,9 +101,14 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
         clawGrab.setPosition(0.5);
     }
 
-    public Action tiltClawMid(){
+    public Action tiltClawMidAction(){
         return new InstantAction(() -> { clawTilt.setPosition(0.8); } );
     }
+
+    public void tiltClawMid(){
+        clawTilt.setPosition(0.2);
+    }
+
 
 
     public void conciseSlideTilt(double pos){
@@ -141,7 +147,8 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
     }
 
     public Action moveSlideBottom(){
-        return new InstantAction(() -> {slides.setTargetPosition(10);
+        return new InstantAction(() -> {
+            slides.setTargetPosition(10);
             slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             slides.setPower(1); });
     }

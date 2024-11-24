@@ -9,15 +9,19 @@ import org.firstinspires.ftc.teamcode.essentials.ITDR1EssentialsTeleop;
 @TeleOp
 public class tele extends ITDR1EssentialsTeleop {
     public tele(){
-        super(2000);
+        super(1);
     }
 
 
     @Override
     public void runOpMode(){
-        initLed();
+        initialize();
         waitForStart();
         while (opModeIsActive()){
+            gamepad1Controls();
+            clawControls();
+            slideControls();
+            /*
             setLed();
             telemetry.addData("red", color.red());
             telemetry.addData("blue", color.blue());
@@ -25,7 +29,7 @@ public class tele extends ITDR1EssentialsTeleop {
 
 
             telemetry.update();
-
+*/
         }
     }
 }
