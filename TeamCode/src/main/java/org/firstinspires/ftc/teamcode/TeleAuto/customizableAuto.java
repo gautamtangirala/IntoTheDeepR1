@@ -12,13 +12,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.teamcode.RRFiles.MecanumDrive;
 import org.firstinspires.ftc.teamcode.essentials.ITDR1EssentialsAuto;
 
+
 @Disabled
 @Autonomous
-public class closeAuto1_3 extends ITDR1EssentialsAuto {
+public class customizableAuto extends ITDR1EssentialsAuto {
 
-
+    private boolean parkAfterDrop = false;
+    private boolean pickUpAnotherBlock = false;
+    private boolean doNothing = true;
     @Override
-
     public void runOpMode(){
         Pose2d startPose = new Pose2d(-35,-60,Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, startPose);
@@ -50,9 +52,42 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
         initDrive();
         initSlides();
         closeClaw();
-        clawTilt.setPosition(0.95);
-        twoBarIn();
+        clawTilt.setPosition(0);
 
+        // Initialization stage
+        telemetry.addLine("Press A to toggle Park After Drop");
+        telemetry.addLine("Press B to toggle Pick Up Another Block");
+        telemetry.addLine("Press X to toggle Do Nothing");
+        telemetry.addLine("Press START to finalize choices.");
+        telemetry.update();
+
+        // Wait for user input during initialization
+        while (!isStarted() && !isStopRequested()) {
+            if (gamepad1.a) {
+                parkAfterDrop = true;
+                pickUpAnotherBlock = false;
+                doNothing = false;
+                sleep(200); // Debounce input
+            }
+            if (gamepad1.b) {
+                parkAfterDrop = false;
+                pickUpAnotherBlock = true;
+                doNothing = false;
+                sleep(200); // Debounce input
+            }
+            if (gamepad1.x) {
+                parkAfterDrop = false;
+                pickUpAnotherBlock = false;
+                doNothing = true;
+                sleep(200); // Debounce input
+            }
+
+            // Update telemetry
+            telemetry.addData("Park After Drop", parkAfterDrop ? "Yes" : "No");
+            telemetry.addData("Pick Up Another Block", pickUpAnotherBlock ? "Yes" : "No");
+            telemetry.addData("Do Nothing", doNothing ? "Yes" : "No");
+            telemetry.update();
+        }
         waitForStart();
 
         Actions.runBlocking(new ParallelAction(
@@ -63,12 +98,12 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
 
         sleep(200);
         tiltClawMid();
-        conciseSlideTilt(0.9);
+        conciseSlideTilt(1);
         sleep(200);
         openClaw();
         sleep(200);
-        conciseSlideTilt(0.5);
-        sleep(200);
+        conciseSlideTilt(0.8);
+        clawTilt.setPosition(0.1);
 
         Actions.runBlocking(new ParallelAction(
                 pickRightBlock,
@@ -89,15 +124,15 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
         ));
 
 
-
         sleep(200);
         tiltClawMid();
-        conciseSlideTilt(0.9);
+        conciseSlideTilt(1);
         sleep(200);
         openClaw();
         sleep(200);
-        conciseSlideTilt(0.5);
-        sleep(200);
+        conciseSlideTilt(0.8);
+        clawTilt.setPosition(0.1);
+
 
         Actions.runBlocking(new ParallelAction(
                 pickMidBlock,
@@ -111,7 +146,7 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
         closeClaw();
         sleep(200);
 
-        /*
+
         bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(dropVector, DropAngle).build();
         Actions.runBlocking(new ParallelAction(
                 bucketDropOff,
@@ -121,12 +156,12 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
 
         sleep(200);
         tiltClawMid();
-        conciseSlideTilt(0.9);
+        conciseSlideTilt(1);
         sleep(200);
         openClaw();
         sleep(200);
-        conciseSlideTilt(0.5);
-        
+        conciseSlideTilt(0.8);
+        clawTilt.setPosition(0.1);
 
         Actions.runBlocking(new ParallelAction(
                 pickLeftBlock,
@@ -147,21 +182,40 @@ public class closeAuto1_3 extends ITDR1EssentialsAuto {
 
 
 
-        conciseSlideTilt(0.9);
+        conciseSlideTilt(1);
         sleep(1000);
         openClaw();
         sleep(200);
 
-        bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(new Vector2d(DropX + 4, DropY +  4), DropAngle).build();
-        Actions.runBlocking(new ParallelAction(
-                bucketDropOff,
-                moveSlideBottom(),
-                tiltSlide(0)
-        ));
 
+
+        if(doNothing) {
+            bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(new Vector2d(DropX + 4, DropY + 4), DropAngle).build();
+            Actions.runBlocking(new ParallelAction(
+                    bucketDropOff,
+                    moveSlideBottom(),
+                    tiltSlide(0)
+            ));
+        }
+        else if(parkAfterDrop){
+            Action parking = drive.actionBuilder(drive.pose).strafeToLinearHeading(new Vector2d(0,-30), Math.toRadians(90)).strafeToConstantHeading(new Vector2d(50,-30)).strafeToConstantHeading(new Vector2d(50,-53)).build();
+            Actions.runBlocking(new ParallelAction(
+                    parking,
+                    moveSlideBottom(),
+                    tiltSlide(0)
+            ));
+        }
+        else if(pickUpAnotherBlock){
+            bucketDropOff = drive.actionBuilder(drive.pose).strafeToLinearHeading(new Vector2d(DropX + 4, DropY + 4), DropAngle).build();
+            Actions.runBlocking(new ParallelAction(
+                    bucketDropOff,
+                    moveSlideBottom(),
+                    tiltSlide(0)
+            ));
+        }
 
         sleep(1000);
-        */
+
     }
 
 }

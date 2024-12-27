@@ -98,15 +98,18 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
     }
 
     public void closeClaw(){
-        clawGrab.setPosition(0.5);
+        clawGrab.setPosition(1);
     }
 
     public Action tiltClawMidAction(){
-        return new InstantAction(() -> { clawTilt.setPosition(0.8); } );
+        return new InstantAction(() -> { clawTilt.setPosition(0.5); } );
     }
 
     public void tiltClawMid(){
-        clawTilt.setPosition(0.2);
+        clawTilt.setPosition(0.3);
+    }
+    public void tiltClawDown(){
+        clawTilt.setPosition(0.7);
     }
 
 
@@ -124,18 +127,25 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
         return new InstantAction(() -> {conciseSlideTilt(pos);});
     }
 
-    public Action twoBarIn(){
-        return new InstantAction(() -> {twoBar.setPosition(0);});
+    public Action twoBarInAction(){
+        return new InstantAction(() -> {twoBarIn();});
     }
 
-    public Action twoBarOut(){
-        return new InstantAction(() -> {twoBar.setPosition(1);});
+    public Action twoBarOutAction(){
+        return new InstantAction(() -> {twoBar.setPosition(0.8);});
     }
 
+    public void twoBarIn(){
+        twoBar.setPosition(0);
+    }
+
+    public void twoBarOut(){
+        twoBar.setPosition(0.7);
+    }
 
 
     public Action moveSlideTop(){
-        return new InstantAction(() -> {slides.setTargetPosition(800);
+        return new InstantAction(() -> {slides.setTargetPosition(675);
         slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         slides.setPower(1);  });
     }
@@ -148,7 +158,7 @@ public class ITDR1EssentialsAuto extends LinearOpMode {
 
     public Action moveSlideBottom(){
         return new InstantAction(() -> {
-            slides.setTargetPosition(10);
+            slides.setTargetPosition(5);
             slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             slides.setPower(1); });
     }

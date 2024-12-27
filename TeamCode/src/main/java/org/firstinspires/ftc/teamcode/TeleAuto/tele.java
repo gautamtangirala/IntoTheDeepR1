@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.essentials.ITDR1EssentialsTeleop;
 
 
-@TeleOp
+@TeleOp(name = "tele")
 public class tele extends ITDR1EssentialsTeleop {
     public tele(){
         super(1);
@@ -21,6 +21,7 @@ public class tele extends ITDR1EssentialsTeleop {
             gamepad1Controls();
             clawControls();
             slideControls();
+            telemetry.update();
             /*
             setLed();
             telemetry.addData("red", color.red());
